@@ -23,6 +23,8 @@ python -m venv .venv
 
 公开作品集演示使用独立入口 `jobpilot/demo_app.py` 和虚构临时数据；部署步骤及其与本机数据的边界见 [DEPLOYMENT.md](./DEPLOYMENT.md)。
 
+在线演示：[JobPilot 虚构数据体验版](https://demoapppy-fcjwjvo94qszty74cg2ydo.streamlit.app/)。
+
 产品经理作品集案例：[JobPilot 产品案例](https://jobpilot-pm-case.ochrethyme64.chatgpt.site)。
 
 数据层使用 `JobService`：
