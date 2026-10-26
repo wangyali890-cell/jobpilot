@@ -2,8 +2,16 @@
 
 from pathlib import Path
 from tempfile import TemporaryDirectory
+import sys
 
 import streamlit as st
+
+# Community Cloud launches this file from the package directory without
+# installing the local project as a package. Add the repository root so the
+# absolute ``jobpilot`` imports below resolve in that environment.
+project_root = str(Path(__file__).resolve().parents[1])
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 from jobpilot.app import run_app
 from jobpilot.demo_data import seed_demo
