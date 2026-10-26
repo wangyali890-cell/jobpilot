@@ -23,6 +23,8 @@ python -m venv .venv
 
 公开作品集演示使用独立入口 `jobpilot/demo_app.py` 和虚构临时数据；部署步骤及其与本机数据的边界见 [DEPLOYMENT.md](./DEPLOYMENT.md)。
 
+产品经理作品集案例：[JobPilot 产品案例](https://jobpilot-pm-case.ochrethyme64.chatgpt.site)。
+
 数据层使用 `JobService`：
 
 ```python
@@ -35,4 +37,3 @@ print(job.id, service.get_overview().total_jobs)
 
 真实岗位、备注和本地数据库文件不要提交到 Git。测试使用临时 SQLite 数据库与虚构岗位。
 
-本工作区的 `.git` 目录由 Codex 沙箱账号创建。当前 Windows 用户直接运行 Git 可能收到“dubious ownership”提示；项目文件和测试不受影响。未修改用户的全局 Git 信任配置。
