@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jobpilot"
+version = "0.1.0"
+description = "个人校招岗位与投递进度管理工具"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+  "streamlit==1.66.0",
+  "tzdata==2026.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==8.4.2"]
+
+[tool.setuptools.packages.find]
+include = ["jobpilot*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

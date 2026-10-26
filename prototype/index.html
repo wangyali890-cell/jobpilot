@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JobPilot · 低保真原型</title>
+  <style>
+    :root { color-scheme: light; --ink:#1b2c46; --sub:#64748b; --line:#d9e2ef; --soft:#edf3fc; --paper:#fff; --wash:#f4f7fc; --focus:#3468e8; --blue:#315fe8; --teal:#087d76; --orange:#b85a27; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--wash); color:var(--ink); font:14px/1.5 system-ui,-apple-system,"Microsoft YaHei",sans-serif; }
+    button,input,select,textarea { font:inherit; }
+    button { cursor:pointer; }
+    button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible { outline:2px solid var(--focus); outline-offset:2px; }
+    .prototype-strip { min-height:40px; padding:7px 20px; background:#eaf2ff; border-bottom:1px solid #c9dcfc; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; color:#315380; font-size:12px; }
+    .prototype-strip strong { letter-spacing:.04em; color:#214fbc; }
+    .prototype-strip button { border:1px solid #a9c5f4; border-radius:6px; background:#fff; color:#2252b8; padding:3px 8px; }
+    .prototype-strip button:hover { background:#dbeaff; }
+    .prototype-strip .strip-actions { display:flex; gap:8px; align-items:center; }
+    .app { display:grid; grid-template-columns:210px minmax(0,1fr); min-height:calc(100vh - 40px); background:var(--wash); }
+    aside { border-right:1px solid #243b68; padding:24px 14px; background:#172b50; color:#ecf3ff; }
+    .brand { padding:0 11px 24px; border-bottom:1px solid #365078; margin-bottom:22px; }
+    .brand-name { font-size:20px; font-weight:700; letter-spacing:-.04em; color:#fff; }
+    .brand-sub { margin-top:3px; color:#afc4e7; font-size:12px; }
+    .nav-label { color:#93aed5; font-size:11px; letter-spacing:.08em; padding:0 11px 8px; }
+    nav { display:grid; gap:6px; }
+    .nav-btn { width:100%; border:1px solid transparent; border-radius:8px; padding:10px 11px; text-align:left; background:transparent; color:#c7d8f2; display:flex; gap:9px; align-items:center; }
+    .nav-btn:hover { background:#263f6c; color:#fff; }
+    .nav-btn.active { background:#dfeaff; border-color:#dfeaff; color:#214cad; font-weight:700; }
+    .nav-num { display:inline-block; width:19px; height:19px; border:1px solid currentColor; border-radius:5px; line-height:17px; text-align:center; font-size:11px; }
+    .side-note { margin:34px 11px 0; padding-top:16px; border-top:1px solid #365078; color:#afc4e7; font-size:12px; }
+    main { min-width:0; padding:28px min(4vw,48px) 56px; }
+    .page { display:none; max-width:1260px; margin:auto; }
+    .page.active { display:block; }
+    .page-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:22px; }
+    h1 { font-size:26px; line-height:1.2; margin:0 0 6px; font-weight:700; color:#172b50; }
+    h2 { font-size:17px; margin:0; font-weight:700; }
+    h3 { font-size:14px; margin:0; font-weight:700; }
+    p { margin:0; }
+    .muted { color:var(--sub); }
+    .page-sub { color:var(--sub); }
+    .button { min-height:36px; border:1px solid #bdcde5; border-radius:7px; background:#fff; color:#2857b7; padding:7px 13px; white-space:nowrap; font-weight:500; }
+    .button:hover { background:#eaf2ff; border-color:#90b5f4; }
+    .button.primary { background:var(--blue); color:#fff; border-color:var(--blue); font-weight:700; box-shadow:0 4px 10px rgba(49,95,232,.17); }
+    .button.primary:hover { background:#234bc1; }
+    .button.text { border:0; padding:5px 7px; min-height:28px; background:transparent; text-decoration:none; color:#2b5cc4; }
+    .button.text:hover { text-decoration:underline; }
+    .button.danger { border-color:#efb1a6; color:#ad3f34; background:#fff8f7; }
+    .toolbar { display:flex; gap:10px; flex-wrap:wrap; padding:14px; border:1px solid var(--line); border-radius:10px; background:#fff; box-shadow:0 3px 12px rgba(34,61,105,.04); margin-bottom:15px; }
+    .toolbar input { flex:1 1 260px; }
+    input,select,textarea { border:1px solid #c3d1e5; border-radius:6px; background:#fff; color:var(--ink); min-height:36px; padding:7px 9px; }
+    textarea { min-height:88px; resize:vertical; }
+    .toolbar select { min-width:128px; }
+    .list-summary { display:flex; align-items:center; justify-content:space-between; margin:10px 0; color:var(--sub); font-size:12px; }
+    .table-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:10px; background:#fff; box-shadow:0 5px 16px rgba(34,61,105,.04); }
+    table { width:100%; border-collapse:collapse; min-width:840px; }
+    th,td { padding:12px 13px; text-align:left; vertical-align:top; border-bottom:1px solid #e6edf5; }
+    th { background:#edf3fc; color:#506683; font-size:12px; font-weight:700; white-space:nowrap; }
+    tbody tr:last-child td { border-bottom:0; }
+    tbody tr:hover { background:#f5f9ff; }
+    tbody tr.flash { background:#dceaff; }
+    .job-title { font-weight:700; }
+    .meta { color:var(--sub); font-size:12px; margin-top:2px; }
+    .tag { display:inline-block; border:1px solid #c3d1e5; border-radius:999px; padding:2px 8px; color:#426281; font-size:12px; background:#f1f5fa; white-space:nowrap; }
+    .tag.status-1 { border-color:#f4d7a7; color:#9c671e; background:#fff7e9; }
+    .tag.status-2 { border-color:#b9d1fc; color:#2859bd; background:#edf4ff; }
+    .tag.status-3 { border-color:#b6dce0; color:#0b747d; background:#eaf8f9; }
+    .tag.status-4 { border-color:#cfc4f3; color:#664cb4; background:#f4f0ff; }
+    .tag.status-5 { border-color:#b2e1c8; color:#217a50; background:#eaf9f0; }
+    .tag.terminal { opacity:.82; }
+    .row-actions { display:flex; gap:3px; align-items:center; white-space:nowrap; }
+    a { color:#2b5cc4; text-decoration:none; }
+    a:hover { text-decoration:underline; }
+    .empty { border:1px dashed #b9cdec; border-radius:10px; padding:52px 20px; text-align:center; color:var(--sub); background:#fff; }
+    .empty strong { display:block; color:var(--ink); margin-bottom:10px; font-size:16px; }
+    .empty .button { margin-top:17px; }
+    .board-help { margin-bottom:16px; color:var(--sub); }
+    .board-scroll { overflow-x:auto; padding-bottom:8px; }
+    .board-grid { display:grid; grid-template-columns:repeat(5,minmax(178px,1fr)); gap:12px; min-width:938px; }
+    .board-col { background:#f7faff; border:1px solid var(--line); border-radius:10px; min-height:280px; overflow:hidden; }
+    .col-head { border-bottom:1px solid var(--line); padding:10px 12px; display:flex; justify-content:space-between; font-weight:700; background:#eaf0fa; }
+    .board-col:nth-child(2) .col-head { background:#fff3e2; color:#91601b; }
+    .board-col:nth-child(3) .col-head { background:#e5efff; color:#2859bd; }
+    .board-col:nth-child(4) .col-head { background:#e4f6f8; color:#0b747d; }
+    .board-col:nth-child(5) .col-head { background:#f1ebff; color:#664cb4; }
+    .col-body { padding:10px; display:grid; gap:9px; align-content:start; }
+    .job-card { border:1px solid #d6e2f0; border-radius:8px; background:#fff; padding:11px; box-shadow:0 3px 8px rgba(34,61,105,.04); }
+    .job-card .company { color:var(--sub); font-size:12px; }
+    .job-card .job-title { margin:3px 0 8px; }
+    .job-card .small-row { display:flex; justify-content:space-between; gap:7px; font-size:12px; color:var(--sub); }
+    .job-card label { display:block; font-size:11px; color:var(--sub); margin-top:10px; }
+    .job-card select { width:100%; margin-top:3px; min-height:32px; padding:4px 6px; font-size:12px; }
+    .col-empty { color:#8fa0b7; font-size:12px; padding:9px; border:1px dashed #c3d1e5; border-radius:6px; text-align:center; }
+    .terminal-section { margin-top:22px; border:1px solid var(--line); border-radius:9px; background:#fff; }
+    .terminal-section summary { cursor:pointer; padding:11px 14px; font-weight:700; }
+    .terminal-inner { border-top:1px solid var(--line); padding:13px; display:flex; gap:10px; flex-wrap:wrap; }
+    .terminal-inner .job-card { width:220px; }
+    .metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:24px; }
+    .metric { border:1px solid #cfe0fa; border-radius:10px; background:#eaf2ff; padding:18px; }
+    .metric:nth-child(2) { border-color:#bbe2db; background:#e9f8f4; }
+    .metric:nth-child(3) { border-color:#dacdf7; background:#f3efff; }
+    .metric-name { color:var(--sub); font-size:12px; }
+    .metric-value { font-size:30px; font-weight:700; margin-top:7px; color:#2454bd; }
+    .metric:nth-child(2) .metric-value { color:#087d76; }
+    .metric:nth-child(3) .metric-value { color:#674ab5; }
+    .overview-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .panel { border:1px solid var(--line); border-radius:10px; background:#fff; min-width:0; overflow:hidden; box-shadow:0 5px 16px rgba(34,61,105,.04); }
+    .panel-head { display:flex; align-items:center; justify-content:space-between; background:#eaf2ff; border-bottom:1px solid var(--line); padding:11px 14px; }
+    .panel:nth-child(2) .panel-head { background:#fff0e9; }
+    .panel-body { min-height:170px; }
+    .due-item { display:grid; grid-template-columns:92px minmax(0,1fr) auto; gap:10px; align-items:center; padding:13px 14px; border-bottom:1px solid #e6edf5; }
+    .due-item:last-child { border-bottom:0; }
+    .due-date { font-weight:700; font-variant-numeric:tabular-nums; color:#2859bd; }
+    .panel:nth-child(2) .due-date { color:#b85a27; }
+    .due-main { min-width:0; }
+    .due-main strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .due-main span { color:var(--sub); font-size:12px; }
+    .panel-empty { padding:34px 15px; text-align:center; color:var(--sub); }
+    .helper-note { color:var(--sub); font-size:12px; margin-top:14px; }
+    .overlay { display:none; position:fixed; inset:0; z-index:20; background:rgba(0,0,0,.32); }
+    .overlay.show { display:block; }
+    .drawer { position:absolute; right:0; top:0; height:100%; width:min(520px,100vw); overflow:auto; background:#fff; border-left:1px solid #c5d6ef; box-shadow:-12px 0 28px rgba(15,43,80,.15); }
+    .drawer-head { position:sticky; top:0; z-index:1; background:#eaf2ff; border-bottom:1px solid var(--line); padding:17px 20px; display:flex; justify-content:space-between; align-items:center; }
+    .drawer-head h2 { font-size:20px; }
+    .drawer-body { padding:20px 20px 96px; }
+    .form-section { border:0; padding:0; margin:0 0 22px; }
+    .form-section legend { width:100%; border-bottom:1px solid var(--line); padding-bottom:8px; font-weight:700; margin-bottom:14px; }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:13px; }
+    .field { display:flex; flex-direction:column; gap:5px; min-width:0; }
+    .field.full { grid-column:1/-1; }
+    .field label { font-weight:700; font-size:12px; }
+    .field small { color:var(--sub); }
+    .field-error { color:#b6343c; font-size:12px; min-height:0; }
+    .field input,.field select,.field textarea { width:100%; }
+    .drawer details { margin-top:3px; border:1px solid var(--line); padding:12px; }
+    .drawer details summary { cursor:pointer; font-weight:700; }
+    .drawer details .form-grid { margin-top:15px; }
+    .form-actions { position:sticky; bottom:0; display:flex; justify-content:flex-end; gap:8px; padding:13px 20px; background:#fff; border-top:1px solid var(--line); }
+    .modal-holder { display:none; position:fixed; inset:0; z-index:30; background:rgba(0,0,0,.35); align-items:center; justify-content:center; padding:15px; }
+    .modal-holder.show { display:flex; }
+    .modal { width:min(420px,100%); background:#fff; border:1px solid #cbd8ec; border-radius:12px; padding:22px; box-shadow:0 16px 48px rgba(15,43,80,.2); }
+    .modal h2 { margin-bottom:9px; }
+    .modal p { color:var(--sub); margin-bottom:20px; }
+    .modal-actions { display:flex; justify-content:flex-end; gap:8px; }
+    .toast { position:fixed; z-index:40; right:20px; bottom:20px; border:1px solid #234bc1; border-radius:8px; background:#214bb8; color:#fff; padding:10px 14px; display:none; max-width:330px; box-shadow:0 8px 24px rgba(30,64,143,.2); }
+    .toast.show { display:block; }
+    @media (max-width:800px) { .app { grid-template-columns:1fr; } aside { border-right:0; border-bottom:1px solid var(--line); padding:10px 14px; } .brand { display:none; } .nav-label,.side-note { display:none; } nav { display:flex; } .nav-btn { justify-content:center; } main { padding:20px 14px 40px; } .overview-grid { grid-template-columns:1fr; } }
+    @media (max-width:560px) { .page-head { flex-wrap:wrap; } .toolbar { padding:10px; } .toolbar input,.toolbar select { flex:1 1 100%; width:100%; } .metrics { gap:6px; } .metric { padding:10px; } .metric-value { font-size:24px; } .due-item { grid-template-columns:80px minmax(0,1fr); } .due-item .button { grid-column:2; justify-self:start; } .form-grid { grid-template-columns:1fr; } .field.full { grid-column:auto; } }
+  </style>
+</head>
+<body>
+  <div class="prototype-strip">
+    <div><strong>低保真原型</strong> · 示例公司与岗位均为虚构 · 操作仅在本次打开期间保留</div>
+    <div class="strip-actions"><button id="show-empty" type="button">查看空状态</button><button id="reset-demo" type="button">恢复示例数据</button></div>
+  </div>
+  <div class="app">
+    <aside>
+      <div class="brand"><div class="brand-name">JobPilot</div><div class="brand-sub">岗位与投递进度管理</div></div>
+      <div class="nav-label">工作空间</div>
+      <nav aria-label="主导航">
+        <button class="nav-btn active" data-page="library" type="button"><span class="nav-num">1</span>岗位库</button>
+        <button class="nav-btn" data-page="board" type="button"><span class="nav-num">2</span>进度看板</button>
+        <button class="nav-btn" data-page="overview" type="button"><span class="nav-num">3</span>求职总览</button>
+      </nav>
+      <div class="side-note">看到岗位时先保存；投递进展变化时回来更新状态。</div>
+    </aside>
+    <main>
+      <section class="page active" id="page-library" aria-labelledby="library-title">
+        <div class="page-head"><div><h1 id="library-title">岗位库</h1><p class="page-sub">把浏览器收藏变成可追踪的岗位记录</p></div><button class="button primary" id="add-job" type="button">＋ 添加岗位</button></div>
+        <div class="toolbar" aria-label="岗位筛选">
+          <input id="search" type="search" placeholder="搜索公司、岗位或城市" aria-label="搜索公司、岗位或城市">
+          <select id="filter-status" aria-label="按投递状态筛选"></select>
+          <select id="filter-type" aria-label="按招聘类型筛选"><option value="">全部类型</option><option>校招</option><option>实习</option></select>
+          <select id="filter-city" aria-label="按城市筛选"></select>
+          <button class="button" id="clear-filters" type="button">清除筛选</button>
+        </div>
+        <div class="list-summary"><span id="list-count">共 0 条岗位</span><span>按最近修改排序</span></div>
+        <div id="library-content"></div>
+      </section>
+
+      <section class="page" id="page-board" aria-labelledby="board-title">
+        <div class="page-head"><div><h1 id="board-title">进度看板</h1><p class="page-sub">按阶段查看岗位，直接修改状态</p></div></div>
+        <p class="board-help">选择卡片上的状态即可更新；可以跳过阶段。终止状态收在下方。</p>
+        <div id="board-content"></div>
+      </section>
+
+      <section class="page" id="page-overview" aria-labelledby="overview-title">
+        <div class="page-head"><div><h1 id="overview-title">求职总览</h1><p class="page-sub">查看累计投递与接下来要处理的事</p></div></div>
+        <div class="metrics"><div class="metric"><div class="metric-name">岗位总数</div><div class="metric-value" id="metric-total">0</div></div><div class="metric"><div class="metric-name">累计投递</div><div class="metric-value" id="metric-applied">0</div></div><div class="metric"><div class="metric-name">当前面试</div><div class="metric-value" id="metric-interview">0</div></div></div>
+        <div class="overview-grid"><div class="panel"><div class="panel-head"><h2>未来 7 天</h2><span class="muted" id="upcoming-count">0 项</span></div><div class="panel-body" id="upcoming"></div></div><div class="panel"><div class="panel-head"><h2>逾期事项</h2><span class="muted" id="overdue-count">0 项</span></div><div class="panel-body" id="overdue"></div></div></div>
+        <p class="helper-note">仅在打开应用时显示事项；Offer、已拒绝、已结束和已放弃的岗位不进入日期列表。</p>
+      </section>
+    </main>
+  </div>
+
+  <div class="overlay" id="drawer-overlay" aria-hidden="true">
+    <div class="drawer" role="dialog" aria-modal="true" aria-labelledby="form-title">
+      <div class="drawer-head"><h2 id="form-title">添加岗位</h2><button class="button text" id="close-drawer" type="button" aria-label="关闭表单">关闭 ×</button></div>
+      <form id="job-form" novalidate>
+        <div class="drawer-body">
+          <fieldset class="form-section"><legend>基础信息</legend><div class="form-grid">
+            <div class="field full"><label for="company">公司名称 *</label><input id="company" name="company" maxlength="100" autocomplete="off"><span class="field-error" data-error="company"></span></div>
+            <div class="field full"><label for="job-title">岗位名称 *</label><input id="job-title" name="title" maxlength="100" autocomplete="off"><span class="field-error" data-error="title"></span></div>
+            <div class="field"><label for="job-type">招聘类型</label><select id="job-type" name="type"><option>校招</option><option>实习</option></select></div>
+            <div class="field"><label for="city">城市</label><input id="city" name="city" maxlength="60"></div>
+            <div class="field full"><label for="url">招聘链接</label><input id="url" name="url" type="url" maxlength="2048" placeholder="https://"><span class="field-error" data-error="url"></span></div>
+          </div></fieldset>
+          <details id="more-fields"><summary>进度、日期与备注（可选）</summary><div class="form-grid">
+            <div class="field"><label for="status">投递状态</label><select id="status" name="status"></select></div>
+            <div class="field"><label for="applied-at">首次投递日期</label><input id="applied-at" name="appliedAt" type="date"><small>进入已投递及后续阶段时自动填今天</small><span class="field-error" data-error="appliedAt"></span></div>
+            <div class="field"><label for="deadline">招聘截止日期</label><input id="deadline" name="deadline" type="date"></div>
+            <div class="field"><label for="task-date">下一步任务日期</label><input id="task-date" name="taskDate" type="date"><span class="field-error" data-error="taskDate"></span></div>
+            <div class="field full"><label for="next-action">下一步任务</label><input id="next-action" name="nextAction" maxlength="200" placeholder="例如：准备笔试"><span class="field-error" data-error="nextAction"></span></div>
+            <div class="field full"><label for="notes">备注</label><textarea id="notes" name="notes" maxlength="2000"></textarea></div>
+          </div></details>
+        </div>
+        <div class="form-actions"><button class="button" id="cancel-form" type="button">取消</button><button class="button primary" type="submit">保存岗位</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-holder" id="delete-modal" aria-hidden="true"><div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="delete-title" aria-describedby="delete-copy"><h2 id="delete-title">删除岗位？</h2><p id="delete-copy"></p><div class="modal-actions"><button class="button" id="cancel-delete" type="button">取消</button><button class="button danger" id="confirm-delete" type="button">确认删除</button></div></div></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const statuses = ['收藏','准备投递','已投递','测评/笔试','面试','Offer','已拒绝','已结束','已放弃'];
+    const activeStatuses = statuses.slice(0,5);
+    const terminalStatuses = new Set(statuses.slice(5));
+    const appliedStatuses = new Set(['已投递','测评/笔试','面试','Offer']);
+    const $ = (selector) => document.querySelector(selector);
+    const esc = (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    const today = () => new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+    const plusDays = (iso, days) => { const date = new Date(iso+'T00:00:00Z'); date.setUTCDate(date.getUTCDate()+days); return date.toISOString().slice(0,10); };
+    const shortDate = (iso) => iso ? iso.slice(5).replace('-','/') : '—';
+    const now = () => new Date().toISOString();
+    let jobs = [];
+    let nextId = 1;
+    let editingId = null;
+    let deletingId = null;
+    let toastTimer = null;
+    let currentPage = 'library';
+
+    function sampleJobs() {
+      const t = today();
+      return [
+        {company:'星河科技',title:'产品经理实习生',type:'实习',city:'北京',url:'https://example.com/jobs/101',status:'收藏',appliedAt:'',deadline:plusDays(t,6),nextAction:'查看岗位要求',taskDate:plusDays(t,1),notes:''},
+        {company:'远山互联',title:'AI 产品经理',type:'校招',city:'上海',url:'https://example.com/jobs/102',status:'已投递',appliedAt:plusDays(t,-4),deadline:plusDays(t,8),nextAction:'准备在线测评',taskDate:plusDays(t,3),notes:''},
+        {company:'云帆科技',title:'用户产品经理',type:'校招',city:'深圳',url:'https://example.com/jobs/103',status:'面试',appliedAt:plusDays(t,-10),deadline:'',nextAction:'准备一面',taskDate:plusDays(t,1),notes:''},
+        {company:'北辰数字',title:'增长产品经理',type:'校招',city:'北京',url:'https://example.com/jobs/104',status:'准备投递',appliedAt:'',deadline:plusDays(t,-1),nextAction:'修改简历',taskDate:plusDays(t,-2),notes:''},
+        {company:'原点网络',title:'平台产品经理',type:'校招',city:'杭州',url:'https://example.com/jobs/105',status:'已拒绝',appliedAt:plusDays(t,-15),deadline:plusDays(t,-5),nextAction:'',taskDate:'',notes:''}
+      ].map((item,index) => ({...item,id:index+1,updatedAt:new Date(Date.now()-index*3600000).toISOString()}));
+    }
+    function resetDemo(empty=false) { jobs = empty ? [] : sampleJobs(); nextId = jobs.length+1; clearFilters(); render(); showToast(empty ? '已切换到空状态' : '已恢复示例数据'); }
+    function showToast(message) { const box=$('#toast'); box.textContent=message; box.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>box.classList.remove('show'),2800); }
+    function setPage(page) { currentPage=page; document.querySelectorAll('.page').forEach(el=>el.classList.toggle('active',el.id==='page-'+page)); document.querySelectorAll('.nav-btn').forEach(el=>el.classList.toggle('active',el.dataset.page===page)); render(); window.scrollTo({top:0,behavior:'smooth'}); }
+    function clearFilters() { $('#search').value=''; $('#filter-status').value=''; $('#filter-type').value=''; $('#filter-city').value=''; }
+    function options(selected) { return statuses.map(status=>`<option value="${esc(status)}"${status===selected?' selected':''}>${esc(status)}</option>`).join(''); }
+    function renderFilters() {
+      const status=$('#filter-status').value, city=$('#filter-city').value;
+      $('#filter-status').innerHTML='<option value="">全部状态</option>'+options(status);
+      const cities=[...new Set(jobs.map(j=>j.city).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh-CN'));
+      $('#filter-city').innerHTML='<option value="">全部城市</option>'+cities.map(c=>`<option value="${esc(c)}"${c===city?' selected':''}>${esc(c)}</option>`).join('');
+    }
+    function renderLibrary() {
+      const q=$('#search').value.trim().toLocaleLowerCase(), status=$('#filter-status').value, type=$('#filter-type').value, city=$('#filter-city').value;
+      const sorted=[...jobs].sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt)||b.id-a.id);
+      const visible=sorted.filter(j=>(!q||[j.company,j.title,j.city].some(v=>v.toLocaleLowerCase().includes(q)))&&(!status||j.status===status)&&(!type||j.type===type)&&(!city||j.city===city));
+      $('#list-count').textContent=`显示 ${visible.length} / ${jobs.length} 条岗位`;
+      if (!jobs.length) { $('#library-content').innerHTML='<div class="empty"><strong>还没有岗位</strong>点击“添加岗位”开始记录。<br><button class="button primary" data-action="add" type="button">添加第一条岗位</button></div>'; return; }
+      if (!visible.length) { $('#library-content').innerHTML='<div class="empty"><strong>没有匹配的岗位</strong>试试清除筛选条件。</div>'; return; }
+      $('#library-content').innerHTML=`<div class="table-wrap"><table><thead><tr><th>公司 / 岗位</th><th>城市 / 类型</th><th>投递状态</th><th>截止日期</th><th>下一步任务</th><th>操作</th></tr></thead><tbody>${visible.map(j=>`<tr data-job-row="${j.id}"><td><div class="job-title">${esc(j.title)}</div><div class="meta">${esc(j.company)}</div></td><td>${esc(j.city||'—')}<div class="meta">${esc(j.type)}</div></td><td><span class="tag status-${statuses.indexOf(j.status)} ${terminalStatuses.has(j.status)?'terminal':''}">${esc(j.status)}</span></td><td>${j.deadline ? esc(j.deadline) : '—'}${j.deadline&&j.deadline<today()&&!terminalStatuses.has(j.status)?'<div class="meta">已逾期</div>':''}</td><td>${esc(j.nextAction||'—')}<div class="meta">${esc(j.taskDate||'')}</div></td><td><div class="row-actions">${j.url?`<a href="${esc(j.url)}" target="_blank" rel="noopener noreferrer">原链接</a>`:''}<button class="button text" data-action="edit" data-id="${j.id}" type="button">编辑</button><button class="button text" data-action="delete" data-id="${j.id}" type="button">删除</button></div></td></tr>`).join('')}</tbody></table></div>`;
+    }
+    function card(j) { return `<div class="job-card"><div class="company">${esc(j.company)} · ${esc(j.city||'未填城市')}</div><div class="job-title">${esc(j.title)}</div><div class="small-row"><span>${esc(j.type)}</span><span>${j.deadline?'截止 '+esc(shortDate(j.deadline)):''}</span></div><label for="card-status-${j.id}">投递状态</label><select id="card-status-${j.id}" data-status-id="${j.id}" aria-label="${esc(j.company)} ${esc(j.title)} 的投递状态">${options(j.status)}</select></div>`; }
+    function renderBoard() {
+      if (!jobs.length) { $('#board-content').innerHTML='<div class="empty"><strong>还没有可展示的岗位</strong>请先到岗位库添加。<br><button class="button" data-action="go-library" type="button">前往岗位库</button></div>'; return; }
+      const grid=activeStatuses.map(status=>{ const members=jobs.filter(j=>j.status===status); return `<div class="board-col"><div class="col-head"><span>${esc(status)}</span><span>${members.length}</span></div><div class="col-body">${members.length?members.map(card).join(''):'<div class="col-empty">暂无岗位</div>'}</div></div>`; }).join('');
+      const terminal=jobs.filter(j=>terminalStatuses.has(j.status));
+      $('#board-content').innerHTML=`<div class="board-scroll"><div class="board-grid">${grid}</div></div><details class="terminal-section"><summary>终止状态（${terminal.length}） · Offer / 已拒绝 / 已结束 / 已放弃</summary><div class="terminal-inner">${terminal.length?terminal.map(card).join(''):'<span class="muted">暂无岗位</span>'}</div></details>`;
+    }
+    function dueItems() {
+      const items=[];
+      jobs.filter(j=>!terminalStatuses.has(j.status)).forEach(j=>{
+        if (j.deadline) items.push({job:j,date:j.deadline,type:'招聘截止',detail:''});
+        if (j.taskDate && j.nextAction) items.push({job:j,date:j.taskDate,type:'下一步任务',detail:j.nextAction});
+      });
+      return items.sort((a,b)=>a.date.localeCompare(b.date)||a.job.company.localeCompare(b.job.company,'zh-CN')||a.job.title.localeCompare(b.job.title,'zh-CN'));
+    }
+    function dueMarkup(items,emptyText) { return items.length?items.map(item=>`<div class="due-item"><div class="due-date">${esc(shortDate(item.date))}</div><div class="due-main"><strong>${esc(item.job.company)} · ${esc(item.job.title)}</strong><span>${esc(item.type)}${item.detail?' · '+esc(item.detail):''}</span></div><button class="button text" type="button" data-action="locate" data-id="${item.job.id}">查看</button></div>`).join(''):`<div class="panel-empty">${emptyText}</div>`; }
+    function renderOverview() {
+      $('#metric-total').textContent=jobs.length;
+      $('#metric-applied').textContent=jobs.filter(j=>j.appliedAt).length;
+      $('#metric-interview').textContent=jobs.filter(j=>j.status==='面试').length;
+      const t=today(), end=plusDays(t,7), items=dueItems();
+      const upcoming=items.filter(item=>item.date>=t&&item.date<=end), overdue=items.filter(item=>item.date<t);
+      $('#upcoming-count').textContent=`${upcoming.length} 项`;
+      $('#overdue-count').textContent=`${overdue.length} 项`;
+      $('#upcoming').innerHTML=dueMarkup(upcoming,jobs.length?'暂无近期事项':'还没有岗位，先到岗位库添加第一条记录。');
+      $('#overdue').innerHTML=dueMarkup(overdue,'暂无逾期事项');
+    }
+    function render() { renderFilters(); renderLibrary(); renderBoard(); renderOverview(); }
+    function openForm(id=null) {
+      editingId=id; const job=jobs.find(j=>j.id===id);
+      $('#form-title').textContent=job?'编辑岗位':'添加岗位'; $('#job-form').reset();
+      document.querySelectorAll('.field-error').forEach(el=>el.textContent='');
+      $('#more-fields').open=Boolean(job);
+      $('#status').innerHTML=options(job?.status||'收藏');
+      const fields={company:job?.company||'',title:job?.title||'',type:job?.type||'校招',city:job?.city||'',url:job?.url||'',status:job?.status||'收藏',appliedAt:job?.appliedAt||'',deadline:job?.deadline||'',taskDate:job?.taskDate||'',nextAction:job?.nextAction||'',notes:job?.notes||''};
+      Object.entries(fields).forEach(([key,val])=>{ $('#job-form').elements.namedItem(key).value=val; });
+      $('#drawer-overlay').classList.add('show'); $('#drawer-overlay').setAttribute('aria-hidden','false');
+      $('#company').focus();
+    }
+    function closeForm() { $('#drawer-overlay').classList.remove('show'); $('#drawer-overlay').setAttribute('aria-hidden','true'); editingId=null; }
+    function setError(name,message) { const el=document.querySelector(`[data-error="${name}"]`); if (el) el.textContent=message; }
+    function saveForm(event) {
+      event.preventDefault(); document.querySelectorAll('.field-error').forEach(el=>el.textContent='');
+      const form=$('#job-form');
+      const get=(name)=>form.elements.namedItem(name).value.trim();
+      const item={company:get('company'),title:get('title'),type:get('type'),city:get('city'),url:get('url'),status:get('status'),appliedAt:get('appliedAt'),deadline:get('deadline'),taskDate:get('taskDate'),nextAction:get('nextAction'),notes:get('notes')};
+      let invalid=false;
+      if (!item.company) {setError('company','请填写公司名称');invalid=true;}
+      if (!item.title) {setError('title','请填写岗位名称');invalid=true;}
+      if (item.url && !/^https?:\/\/\S+$/i.test(item.url)) {setError('url','请输入有效的招聘链接');invalid=true;}
+      if (item.url && jobs.some(j=>j.url===item.url&&j.id!==editingId)) {setError('url','该链接已保存，请编辑现有岗位');invalid=true;}
+      if (item.appliedAt && item.appliedAt>today()) {setError('appliedAt','首次投递日期不能晚于今天');invalid=true;$('#more-fields').open=true;}
+      const previous=jobs.find(j=>j.id===editingId);
+      if (previous?.appliedAt && !item.appliedAt && appliedStatuses.has(item.status)) {setError('appliedAt','当前状态下不能清空首次投递日期');invalid=true;$('#more-fields').open=true;}
+      if (item.taskDate && !item.nextAction) {setError('nextAction','填写任务日期时，请同时填写下一步任务');invalid=true;$('#more-fields').open=true;}
+      if (invalid) { const first=$('.field-error:not(:empty)'); first?.previousElementSibling?.focus?.(); return; }
+      if (!item.appliedAt && appliedStatuses.has(item.status)) item.appliedAt=today();
+      if (editingId) { const idx=jobs.findIndex(j=>j.id===editingId); if (idx<0) {showToast('该岗位已不存在，列表已刷新');closeForm();render();return;} jobs[idx]={...jobs[idx],...item,updatedAt:now()}; }
+      else jobs.unshift({...item,id:nextId++,updatedAt:now()});
+      closeForm();render();showToast('岗位已保存');
+    }
+    function updateStatus(id,status) {
+      const job=jobs.find(j=>j.id===id);
+      if (!job) {render();showToast('该岗位已不存在，看板已刷新');return;}
+      if (!statuses.includes(status)) {render();showToast('请选择有效的投递状态');return;}
+      if (job.status===status) return;
+      job.status=status; if (!job.appliedAt&&appliedStatuses.has(status)) job.appliedAt=today(); job.updatedAt=now(); render();showToast('投递状态已更新');
+    }
+    function openDelete(id) { const job=jobs.find(j=>j.id===id); if (!job) return; deletingId=id; $('#delete-copy').textContent=`将永久删除“${job.company} · ${job.title}”。此操作无法撤销。`; $('#delete-modal').classList.add('show'); $('#delete-modal').setAttribute('aria-hidden','false'); $('#cancel-delete').focus(); }
+    function closeDelete() { $('#delete-modal').classList.remove('show'); $('#delete-modal').setAttribute('aria-hidden','true'); deletingId=null; }
+    function locateJob(id) { clearFilters(); setPage('library'); const row=document.querySelector(`[data-job-row="${id}"]`); if (row) {row.scrollIntoView({behavior:'smooth',block:'center'});row.classList.add('flash');setTimeout(()=>row.classList.remove('flash'),2200);} }
+
+    document.querySelectorAll('.nav-btn').forEach(button=>button.addEventListener('click',()=>setPage(button.dataset.page)));
+    $('#add-job').addEventListener('click',()=>openForm());
+    $('#close-drawer').addEventListener('click',closeForm);
+    $('#cancel-form').addEventListener('click',closeForm);
+    $('#drawer-overlay').addEventListener('click',event=>{if(event.target.id==='drawer-overlay') closeForm();});
+    $('#job-form').addEventListener('submit',saveForm);
+    $('#cancel-delete').addEventListener('click',closeDelete);
+    $('#confirm-delete').addEventListener('click',()=>{if(deletingId!==null) jobs=jobs.filter(j=>j.id!==deletingId);closeDelete();render();showToast('岗位已删除');});
+    $('#delete-modal').addEventListener('click',event=>{if(event.target.id==='delete-modal') closeDelete();});
+    ['search','filter-status','filter-type','filter-city'].forEach(id=>$('#'+id).addEventListener(id==='search'?'input':'change',renderLibrary));
+    $('#clear-filters').addEventListener('click',()=>{clearFilters();renderLibrary();});
+    $('#show-empty').addEventListener('click',()=>resetDemo(true));
+    $('#reset-demo').addEventListener('click',()=>resetDemo(false));
+    document.addEventListener('change',event=>{const select=event.target.closest('[data-status-id]');if(select) updateStatus(Number(select.dataset.statusId),select.value);});
+    document.addEventListener('click',event=>{if(event.target.closest('a[href^="https://example.com/jobs/"]')){event.preventDefault();showToast('示例链接仅展示入口，实际岗位链接会在新标签打开。');}});
+    document.addEventListener('click',event=>{const action=event.target.closest('[data-action]');if(!action)return;const id=Number(action.dataset.id);if(action.dataset.action==='add')openForm();if(action.dataset.action==='go-library')setPage('library');if(action.dataset.action==='edit')openForm(id);if(action.dataset.action==='delete')openDelete(id);if(action.dataset.action==='locate')locateJob(id);});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'){if($('#delete-modal').classList.contains('show'))closeDelete();else if($('#drawer-overlay').classList.contains('show'))closeForm();}});
+    resetDemo(false);
+    $('#toast').classList.remove('show');
+  </script>
+</body>
+</html>
